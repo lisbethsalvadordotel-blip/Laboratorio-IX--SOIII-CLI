@@ -1,0 +1,196 @@
+Comandos utilizados, práctica laboratorio 9.2:
+Infraestructura como Código (IaC) y Automatización
+
+Despliegue de una VM con Terraform en DigitalOcean.
+
+============================================
+
+# CREAR TOKEN DE API EN DIGITALOCEAN
+
+# Ruta:
+# API > Generate New Token
+# Name: terraform-token
+# Permisos: Read and Write (Full Access)
+# Generate Token
+
+------------------------------------------------------------
+
+# CREAR O SUBIR LLAVE SSH
+
+# Ruta:
+# Settings > Security > Add SSH Key
+
+# En Rocky Linux:
+
+cat ~/.ssh/id_rsa.pub
+
+# Si no existe:
+
+ssh-keygen
+
+# Copiar la clave pública y pegarla en DigitalOcean
+
+------------------------------------------------------------
+
+# INSTALAR TERRAFORM EN ROCKY
+
+sudo dnf install -y yum-utils
+
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+
+sudo dnf install -y terraform
+
+------------------------------------------------------------
+
+# VERIFICAR INSTALACIÓN
+
+terraform -version
+
+------------------------------------------------------------
+
+# CREAR CARPETA DEL PROYECTO
+
+mkdir ~/terraform-digitalocean
+
+cd ~/terraform-digitalocean
+
+------------------------------------------------------------
+
+# CREAR ARCHIVO PRINCIPAL
+
+nano main.tf
+
+------------------------------------------------------------
+
+# CONTENIDO INICIAL:
+
+terraform {
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
+    }
+  }
+}
+
+provider "digitalocean" {
+  token = var.do_token
+}
+
+variable "do_token" {}
+
+------------------------------------------------------------
+
+# CREAR ARCHIVO DE VARIABLES
+
+nano terraform.tfvars
+
+# Agregar tu token:
+
+do_token = "TU_TOKEN_DE_DIGITALOCEAN"
+
+------------------------------------------------------------
+
+# AGREGAR CONFIGURACIÓN DEL DROPLET
+
+nano main.tf
+
+# Añadir al final:
+
+resource "digitalocean_droplet" "os3vm" {
+  image    = "ubuntu-22-04-x64"
+  name     = "OS3vm"
+  region   = "nyc1"
+  size     = "s-1vcpu-1gb"
+  ssh_keys = ["TU_FINGERPRINT_DE_LA_LLAVE"]
+}
+
+------------------------------------------------------------
+
+# IMPORTANTE: OBTENER EL FINGERPRINT
+
+# En DigitalOcean:
+# Settings > Security > SSH Keys
+
+# Copiar el fingerprint de tu llave y pegarlo en:
+ssh_keys = ["fingerprint"]
+
+------------------------------------------------------------
+
+# INICIALIZAR TERRAFORM
+
+terraform init
+
+------------------------------------------------------------
+
+# VALIDAR CONFIGURACIÓN
+
+terraform validate
+
+------------------------------------------------------------
+
+# DESPLEGAR VM
+
+terraform apply
+
+# Escribir:
+yes
+
+------------------------------------------------------------
+
+# VERIFICAR EN DIGITALOCEAN
+
+# Debe aparecer el droplet OS3vm creado
+
+------------------------------------------------------------
+
+# CONECTARSE POR SSH
+
+ssh root@IP_PUBLICA
+
+------------------------------------------------------------
+
+# EJEMPLO:
+
+ssh root@167.xxx.xxx.xxx
+
+------------------------------------------------------------
+
+# RESULTADO ESPERADO
+
+# - Terraform crea una VM en DigitalOcean
+# - La VM aparece en el panel
+# - Se puede acceder por SSH
+
+------------------------------------------------------------
+
+# COMANDOS CLAVE
+
+terraform init
+terraform validate
+terraform apply
+
+------------------------------------------------------------
+
+# NOTAS IMPORTANTES
+
+# - El token es privado
+# - El fingerprint debe ser correcto
+# - La VM usa Ubuntu 22.04
+# - La región es nyc1
+
+------------------------------------------------------------
+
+# ERRORES COMUNES
+
+# Error de token:
+verificar terraform.tfvars
+
+# Error de SSH:
+verificar fingerprint
+
+# Error de provider:
+terraform init
+
+# No conecta SSH:
+esperar que la VM termine de crearse
