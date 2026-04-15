@@ -1,0 +1,187 @@
+============================================
+Comandos utilizados, práctica laboratorio 9.3:
+Infraestructura como Código (IaC) y Automatización.
+
+Instalación y Configuración de Ansible
+============================================
+
+# DATOS DEL LABORATORIO
+
+# VM-Server (Ansible Controller): Rocky Linux
+# Cliente Linux (DigitalOcean o VM Linux)
+# Cliente Windows: Windows 10
+
+------------------------------------------------------------
+
+# INSTALAR ANSIBLE EN EL SERVIDOR ROCKY LINUX
+
+sudo dnf install epel-release -y
+sudo dnf install ansible -y
+sudo dnf install python3-pip -y
+
+# Instalar soporte para Windows
+pip3 install pywinrm
+
+# Verificar instalación
+ansible --version
+
+------------------------------------------------------------
+
+# CREAR USUARIO ansible EN EL CLIENTE LINUX
+
+sudo useradd -m ansible
+sudo passwd ansible
+sudo usermod -aG wheel ansible
+
+# Permitir sudo sin contraseña (opcional pero recomendado)
+echo 'ansible ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/ansible
+
+------------------------------------------------------------
+
+# CREAR LLAVES SSH EN EL ANSIBLE CONTROLLER
+
+# Verificar si ya existen
+ls ~/.ssh
+
+# Si no existen, crearlas
+ssh-keygen
+
+# Ver llave pública
+cat ~/.ssh/id_rsa.pub
+
+------------------------------------------------------------
+
+# COPIAR LLAVE AL CLIENTE LINUX
+
+ssh-copy-id ansible@IP_DEL_CLIENTE_LINUX
+
+# EJEMPLO:
+# ssh-copy-id ansible@192.168.100.204
+
+------------------------------------------------------------
+
+# PROBAR ACCESO SSH SIN CONTRASEÑA
+
+ssh ansible@IP_DEL_CLIENTE_LINUX
+
+# Si entra sin pedir contraseña → correcto
+
+------------------------------------------------------------
+
+# CREAR USUARIO ansible EN WINDOWS
+
+# Ruta:
+# Settings > Accounts > Other users
+# Add someone else to this PC
+# Add user without Microsoft Account
+
+# Usuario: ansible
+# Contraseña: la que tú elijas
+
+# Luego cambiar tipo de cuenta a:
+# Administrador
+
+------------------------------------------------------------
+
+# CONFIGURAR WINRM EN WINDOWS
+
+# Cambiar perfil de red a Privado:
+# Settings > Network & Internet > Ethernet > Network profile > Private
+
+# Abrir PowerShell como administrador y ejecutar:
+
+winrm quickconfig
+winrm set winrm/config/service/auth '@{Basic="true"}'
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $true
+Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
+
+# Verificar servicio WinRM
+# services.msc > Windows Remote Management (WS-Management)
+# Startup type: Automatic
+# Status: Running
+
+------------------------------------------------------------
+
+# CREAR INVENTARIO DE ANSIBLE EN EL SERVIDOR
+
+sudo nano /etc/ansible/hosts
+
+# CONTENIDO DE EJEMPLO:
+
+[linux]
+cliente1 ansible_host=IP_DEL_CLIENTE_LINUX ansible_user=ansible ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_become=true ansible_become_method=sudo
+
+[win]
+cliente2 ansible_host=IP_DEL_CLIENTE_WINDOWS ansible_user=ansible ansible_password=TU_CONTRASEÑA ansible_connection=winrm ansible_winrm_transport=basic ansible_port=5985 ansible_winrm_server_cert_validation=ignore
+
+# EJEMPLO ADAPTADO:
+# IP Linux cliente: 192.168.100.204
+# IP Windows cliente: IP de tu Windows
+
+# Quedaría algo así:
+
+[linux]
+cliente1 ansible_host=192.168.100.204 ansible_user=ansible ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_become=true ansible_become_method=sudo
+
+[win]
+cliente2 ansible_host=IP_WINDOWS ansible_user=ansible ansible_password=TU_CONTRASEÑA ansible_connection=winrm ansible_winrm_transport=basic ansible_port=5985 ansible_winrm_server_cert_validation=ignore
+
+------------------------------------------------------------
+
+# PROBAR CONECTIVIDAD CON EL CLIENTE LINUX
+
+ansible linux -m ping
+
+# RESULTADO ESPERADO:
+# SUCCESS
+# "ping": "pong"
+
+------------------------------------------------------------
+
+# PROBAR CONECTIVIDAD CON EL CLIENTE WINDOWS
+
+ansible win -m win_ping
+
+# RESULTADO ESPERADO:
+# SUCCESS
+# "ping": "pong"
+
+------------------------------------------------------------
+
+# RESULTADO FINAL ESPERADO
+
+# - Ansible instalado en Rocky Linux
+# - Usuario ansible creado en Linux y Windows
+# - Acceso SSH por llaves hacia el cliente Linux
+# - Inventario /etc/ansible/hosts configurado
+# - Grupo [linux] funcionando con ping
+# - Grupo [win] funcionando con win_ping
+
+------------------------------------------------------------
+
+# COMANDOS CLAVE
+
+ansible --version
+ssh-keygen
+ssh-copy-id ansible@IP
+ansible linux -m ping
+ansible win -m win_ping
+
+------------------------------------------------------------
+
+# ERRORES COMUNES
+
+# Si no conecta a Linux:
+ssh ansible@IP_DEL_CLIENTE_LINUX
+
+# Si pide contraseña:
+revisar ssh-copy-id y llave ~/.ssh/id_rsa
+
+# Si no conecta a Windows:
+verificar WinRM
+verificar usuario y contraseña
+verificar puerto 5985
+
+# Si no encuentra hosts:
+revisar /etc/ansible/hosts
