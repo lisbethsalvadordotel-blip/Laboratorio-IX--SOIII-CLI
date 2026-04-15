@@ -1,0 +1,80 @@
+Comandos utilizados, práctica laboratorio 9.4:
+Infraestructura como Código (IaC) y Automatización.
+
+Comandos Ad-Hoc con Ansible
+============================================
+
+# =========================
+# REINICIAR VM LINUX (ansible1)
+# =========================
+
+# Ejecutar comando ad-hoc:
+
+ansible linux -m reboot -b
+
+# RESULTADO ESPERADO:
+# - La máquina Linux se reinicia correctamente
+
+------------------------------------------------------------
+
+# =========================
+# COPIAR ARCHIVO EN WINDOWS (ansible2)
+# =========================
+
+# NOTA:
+# El archivo debe existir previamente en:
+# C:/Users/ansible/Desktop/prueba.txt
+
+# Ejecutar comando ad-hoc:
+
+ansible win -m win_copy \
+-a "src='C:/Users/ansible/Desktop/prueba.txt' dest='C:/Users/ansible/Documents/prueba.txt' remote_src=yes"
+
+------------------------------------------------------------
+
+# VERIFICACIÓN EN WINDOWS
+
+# Ir a:
+# Documents (Documentos)
+
+# Verificar que existe:
+# prueba.txt
+
+------------------------------------------------------------
+
+# RESULTADO ESPERADO
+
+# - El archivo se copia correctamente
+# - Se encuentra en la carpeta Documents
+# - No hay errores en la ejecución
+
+------------------------------------------------------------
+
+# COMANDOS CLAVE
+
+ansible linux -m reboot -b
+ansible win -m win_copy -a "..."
+
+------------------------------------------------------------
+
+# NOTAS IMPORTANTES
+
+# - remote_src=yes indica que el archivo ya está en la máquina Windows
+# - Las rutas en Windows deben ir con /
+# - El usuario debe tener permisos sobre esas carpetas
+
+------------------------------------------------------------
+
+# ERRORES COMUNES
+
+# Si falla Linux:
+verificar grupo [linux] en /etc/ansible/hosts
+
+# Si falla Windows:
+verificar WinRM activo
+
+# Si no copia archivo:
+verificar que el archivo exista en Desktop
+
+# Si error de permisos:
+ejecutar como usuario administrador
