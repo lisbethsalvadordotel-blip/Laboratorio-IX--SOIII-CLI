@@ -1,0 +1,94 @@
+Comandos utilizados, práctica laboratorio 9.1:
+Infraestructura como Código (IaC) y Automatización.
+
+Instalación de Webmin
+
+============================================
+
+# AGREGAR REPOSITORIO DE WEBMIN
+
+sudo tee /etc/yum.repos.d/webmin.repo<<EOF
+[Webmin]
+name=Webmin Distribution Neutral
+baseurl=https://download.webmin.com/download/yum
+enabled=1
+gpgcheck=1
+gpgkey=https://download.webmin.com/jcameron-key.asc
+EOF
+
+------------------------------------------------------------
+
+# INSTALAR WEBMIN
+
+sudo dnf install webmin -y
+
+------------------------------------------------------------
+
+# VERIFICAR SERVICIO
+
+sudo systemctl status webmin
+
+------------------------------------------------------------
+
+# ABRIR PUERTO EN FIREWALL
+
+sudo firewall-cmd --permanent --add-port=10000/tcp
+sudo firewall-cmd --reload
+
+------------------------------------------------------------
+
+# VERIFICAR PUERTO
+
+ss -tuln | grep 10000
+
+------------------------------------------------------------
+
+# ACCESO DESDE NAVEGADOR
+
+# Desde la misma máquina:
+https://127.0.0.1:10000
+
+# Desde otra máquina (tu red):
+https://192.168.100.17:10000
+
+# NOTA:
+# Aceptar advertencia de certificado (es normal)
+
+------------------------------------------------------------
+
+# LOGIN
+
+# Usuario:
+root
+
+# Contraseña:
+(la del sistema Linux)
+
+------------------------------------------------------------
+
+# RESULTADO ESPERADO
+
+# - Acceso a la interfaz web de Webmin
+# - Administración del sistema desde navegador
+
+------------------------------------------------------------
+
+# COMANDOS CLAVE
+
+dnf install webmin
+systemctl status webmin
+firewall-cmd --add-port=10000/tcp
+ss -tuln | grep 10000
+
+------------------------------------------------------------
+
+# ERRORES COMUNES
+
+# No abre en navegador:
+sudo systemctl status webmin
+
+# Ver puerto:
+ss -tuln | grep 10000
+
+# Firewall bloqueando:
+sudo firewall-cmd --list-all
